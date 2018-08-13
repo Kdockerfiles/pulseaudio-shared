@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM alpine:3.8
 LABEL maintainer="KenjiTakahashi <kenji.sx>"
 
 RUN apk add --no-cache \
@@ -14,12 +14,11 @@ RUN apk add --no-cache \
     speexdsp-dev \
     alsa-lib-dev
 
-COPY *.patch /home/
+ARG PA_VERSION=12.2
 
-RUN curl -Lo/home/pa.tar.xz https://freedesktop.org/software/pulseaudio/releases/pulseaudio-10.0.tar.xz && \
+RUN curl -Lo/home/pa.tar.xz https://freedesktop.org/software/pulseaudio/releases/pulseaudio-${PA_VERSION}.tar.xz && \
     tar xvf /home/pa.tar.xz -C /home && \
-    cd /home/pulseaudio-10.0 && \
-    patch -Np1 < ../0001-padsp-Make-it-compile-on-musl.patch && \
+    cd /home/pulseaudio-${PA_VERSION} && \
     ./configure \
         --prefix=/usr/local \
         --sysconfdir=/usr/local/etc \
@@ -41,7 +40,7 @@ RUN curl -Lo/home/pa.tar.xz https://freedesktop.org/software/pulseaudio/releases
     && \
     make && \
     make -j1 install && \
-    rm -rf /home/pulseaudio-10.0 /home/*.patch /home/*.xz
+    rm -rf /home/pulseaudio-${PA_VERSION} /home/*.xz
 
 # auth-anonymous=1
 RUN sed -i 's,load-module module-native-protocol-unix,& socket=/tmp/pulse/socket auth-group=root,g' /usr/local/etc/pulse/default.pa
@@ -50,6 +49,6 @@ RUN sed -i 's,; autospawn = yes,autospawn = no,g' /usr/local/etc/pulse/client.co
 RUN sed -i 's,; exit-idle-time = 20,exit-idle-time = -1,g' /usr/local/etc/pulse/daemon.conf
 
 
-FROM alpine:3.6
+FROM alpine:3.8
 
 COPY --from=0 /usr/local/ /usr/local/

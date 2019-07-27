@@ -1,4 +1,4 @@
-FROM alpine:3.8
+FROM alpine:3.10
 LABEL maintainer="KenjiTakahashi <kenji.sx>"
 
 RUN apk add --no-cache \
@@ -49,6 +49,6 @@ RUN sed -i 's,; autospawn = yes,autospawn = no,g' /usr/local/etc/pulse/client.co
 RUN sed -i 's,; exit-idle-time = 20,exit-idle-time = -1,g' /usr/local/etc/pulse/daemon.conf
 
 
-FROM alpine:3.8
+FROM alpine:3.10
 
 COPY --from=0 /usr/local/ /usr/local/

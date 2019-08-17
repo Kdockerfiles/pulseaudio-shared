@@ -2,23 +2,32 @@ FROM alpine:3.10
 LABEL maintainer="KenjiTakahashi <kenji.sx>"
 
 RUN apk add --no-cache \
+    autoconf \
+    automake \
     curl \
     file \
-    make \
     gcc \
+    gettext-dev \
+    git \
+    intltool \
     libc-dev \
-    m4 \
-    libtool \
     libcap-dev \
     libsndfile-dev \
+    libtool \
+    make \
     speexdsp-dev \
     alsa-lib-dev
+
+COPY *.patch /home/
 
 ARG PA_VERSION=12.2
 
 RUN curl -Lo/home/pa.tar.xz https://freedesktop.org/software/pulseaudio/releases/pulseaudio-${PA_VERSION}.tar.xz && \
     tar xvf /home/pa.tar.xz -C /home && \
     cd /home/pulseaudio-${PA_VERSION} && \
+    patch -Np1 < ../b89d33bb182c42db5ad3987b0e91b7bf62f421e8.patch && \
+    autopoint --force && \
+    AUTOPOINT='intltoolize --automake --copy --force' autoreconf -if && \
     ./configure \
         --prefix=/usr/local \
         --sysconfdir=/usr/local/etc \
@@ -39,8 +48,7 @@ RUN curl -Lo/home/pa.tar.xz https://freedesktop.org/software/pulseaudio/releases
         --disable-legacy-database-entry-format \
     && \
     make && \
-    make -j1 install && \
-    rm -rf /home/pulseaudio-${PA_VERSION} /home/*.xz
+    make -j1 install
 
 # auth-anonymous=1
 RUN sed -i 's,load-module module-native-protocol-unix,& socket=/tmp/pulse/socket auth-group=root,g' /usr/local/etc/pulse/default.pa

@@ -14,7 +14,8 @@ RUN apk add --no-cache \
     alsa-lib-dev \
     speexdsp-dev \
     linux-headers \
-    curl
+    curl \
+    libcap-dev
 
 COPY *.patch /home/
 
